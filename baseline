@@ -1,0 +1,88 @@
+# STEP 1: Import libraries
+import tensorflow as tf
+from tensorflow import keras
+from tensorflow.keras import layers
+import matplotlib.pyplot as plt
+import time
+
+# STEP 2: Load dataset (MNIST)
+(x_train, y_train), (x_test, y_test) = keras.datasets.mnist.load_data()
+
+# Normalize data (make values between 0 and 1)
+x_train = x_train / 255.0
+x_test = x_test / 255.0
+
+# STEP 3: Build BASELINE MODEL
+model = keras.Sequential([
+    layers.Flatten(input_shape=(28, 28)),
+    layers.Dense(128, activation='relu'),
+    layers.Dense(10, activation='softmax')
+])
+
+# Compile model
+model.compile(optimizer='adam',
+              loss='sparse_categorical_crossentropy',
+              metrics=['accuracy'])
+
+# STEP 4: Train model (Baseline)
+start_time = time.time()
+
+history = model.fit(x_train, y_train, epochs=5, validation_split=0.1)
+
+end_time = time.time()
+baseline_time = end_time - start_time
+
+# Evaluate model
+baseline_loss, baseline_acc = model.evaluate(x_test, y_test)
+
+print("\nBaseline Accuracy:", baseline_acc)
+print("Training Time:", baseline_time)
+
+# STEP 5: OPTIMIZED MODEL (Hyperparameter tuning)
+
+optimized_model = keras.Sequential([
+    layers.Flatten(input_shape=(28, 28)),
+    layers.Dense(64, activation='relu'),  # reduced neurons
+    layers.Dense(10, activation='softmax')
+])
+
+optimized_model.compile(optimizer=keras.optimizers.Adam(learning_rate=0.001),
+                        loss='sparse_categorical_crossentropy',
+                        metrics=['accuracy'])
+
+start_time = time.time()
+
+opt_history = optimized_model.fit(x_train, y_train, epochs=5, validation_split=0.1)
+
+end_time = time.time()
+optimized_time = end_time - start_time
+
+opt_loss, opt_acc = optimized_model.evaluate(x_test, y_test)
+
+print("\nOptimized Accuracy:", opt_acc)
+print("Optimized Training Time:", optimized_time)
+
+# STEP 6: PLOTS (IMPORTANT FOR JUDGES)
+
+# Accuracy Graph
+plt.plot(history.history['accuracy'], label='Baseline Accuracy')
+plt.plot(opt_history.history['accuracy'], label='Optimized Accuracy')
+plt.title('Accuracy Comparison')
+plt.xlabel('Epochs')
+plt.ylabel('Accuracy')
+plt.legend()
+plt.show()
+
+# Loss Graph
+plt.plot(history.history['loss'], label='Baseline Loss')
+plt.plot(opt_history.history['loss'], label='Optimized Loss')
+plt.title('Loss Comparison')
+plt.xlabel('Epochs')
+plt.ylabel('Loss')
+plt.legend()
+plt.show()
+
+# STEP 7: FINAL COMPARISON
+print("\n--- FINAL COMPARISON ---")
+print(f"Baseline Accuracy: {baseline_acc:.4f}, Time: {baseline_time:.2f}s")
+print(f"Optimized Accuracy: {opt_acc:.4f}, Time: {optimized_time:.2f}s")
